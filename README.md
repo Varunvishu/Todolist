@@ -1,1 +1,1 @@
-Thi is a Todolist app with beautiful UI 
+This is a Todolist app with beautiful UI 
