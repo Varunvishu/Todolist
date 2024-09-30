@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>To-Do List App</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Arial', sans-serif;
+      }
+
+      body {
+        background-color:gainsboro;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        background-color:rgb(201, 168, 168);
+        width: 400px;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      .section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .section input {
+        width: 70%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+
+      .btn {
+        padding: 10px 15px;
+        border-radius: 5px;
+        border: none;
+        background-color: #28a745;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .btn:hover {
+        background-color: #218838;
+      }
+
+      .btn-delete, .btn-delete-selected {
+        background-color: #dc3545;
+      }
+
+      .btn-delete:hover, .btn-delete-selected:hover {
+        background-color: #c82333;
+      }
+
+      .data-items ul {
+        padding: 0;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        background-color: #f9f9f9;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      li span {
+        max-width: 85%;
+        word-wrap: break-word;
+      }
+
+      li input[type="checkbox"] {
+        margin-right: 10px;
+      }
+
+      li.completed span {
+        text-decoration: line-through;
+        color: #999;
+      }
+
+      /* Scrollbar Styling */
+      ul::-webkit-scrollbar {
+        width: 5px;
+      }
+
+      ul::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 10px;
+      }
+
+      .select-all-section {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .select-all-section input {
+        margin-right: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 style="margin-bottom: 20px;">To-Do List</h1>
+      
+      <div class="section">
+        <input type="text" id="input" placeholder="Add a new task..." />
+        <button class="btn btn-add">Add</button>
+      </div>
+
+      <div class="select-all-section" id="selectAllSection">
+        <label>
+          <input type="checkbox" id="selectAllCheckbox" /> Select All
+        </label>
+        <button class="btn btn-delete-selected">Delete Selected</button>
+      </div>
+
+      <div class="data-items">
+        <ul class="items-hidden" id="itemList">
+          <!-- Dynamically added items will go here -->
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      let btnAdd = document.querySelector(".btn-add");
+      let btnDeleteSelected = document.querySelector(".btn-delete-selected");
+      let selectAllSection = document.getElementById("selectAllSection");
+      let selectAllCheckbox = document.getElementById("selectAllCheckbox");
+      let itemList = document.getElementById("itemList");
+      let input = document.getElementById("input");
+
+      // Add item function
+      function addItem() {
+        if (input.value.trim() !== "") {
+          // Create a new list item
+          let newItem = document.createElement("li");
+          newItem.innerHTML = `
+            <input type="checkbox" class="item-checkbox" />
+            <span>${input.value}</span>
+            <button class="btn btn-delete">Delete</button>
+          `;
+
+          // Append the new list item to the list
+          itemList.appendChild(newItem);
+          input.value = ""; // Clear the input after adding
+
+          // Show Select All section if there are 2 or more items
+          if (itemList.children.length >= 2) {
+            selectAllSection.style.display = "flex";
+          }
+
+          // Make the list visible if it was hidden
+          itemList.style.display = "block";
+        } else {
+          alert("Input cannot be empty!"); // Alert if the input is empty
+        }
+      }
+
+      // Event listener to add items on button click
+      btnAdd.addEventListener("click", addItem);
+
+      // Event listener to add items when Enter key is pressed
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          addItem();
+        }
+      });
+
+      // Event listener to handle dynamic items (delete and checkbox toggle)
+      itemList.addEventListener("click", function (e) {
+        if (e.target.tagName === "BUTTON" && e.target.classList.contains("btn-delete")) {
+          let listItem = e.target.parentElement;
+          listItem.style.textDecoration = "line-through";
+          setTimeout(() => {
+            listItem.remove();
+
+            // Hide the "Select All" section if fewer than 2 items remain
+            if (itemList.children.length < 2) {
+              selectAllSection.style.display = "none";
+              selectAllCheckbox.checked = false;
+            }
+
+            if (itemList.children.length === 0) {
+              itemList.style.display = "none";
+            }
+          }, 500);
+        }
+      });
+
+      // Select All Checkbox functionality
+      selectAllCheckbox.addEventListener("change", function () {
+        let allCheckboxes = document.querySelectorAll(".item-checkbox");
+        allCheckboxes.forEach((checkbox) => {
+          checkbox.checked = selectAllCheckbox.checked;
+        });
+      });
+
+      // Delete selected items functionality
+      btnDeleteSelected.addEventListener("click", function () {
+        let allCheckboxes = document.querySelectorAll(".item-checkbox");
+        allCheckboxes.forEach((checkbox) => {
+          if (checkbox.checked) {
+            checkbox.parentElement.remove();
+          }
+        });
+
+        // Hide the list if empty
+        if (itemList.children.length === 0) {
+          itemList.style.display = "none";
+        }
+
+        // Hide "Select All" section if fewer than 2 items remain
+        if (itemList.children.length < 2) {
+          selectAllSection.style.display = "none";
+          selectAllCheckbox.checked = false;
+        }
+      });
+    </script>
+  </body>
+</html>
